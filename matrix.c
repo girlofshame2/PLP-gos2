@@ -67,8 +67,20 @@ void matrix_init_zeros(matrix_t *m) {
 }
 
 int matrix_init_identity(matrix_t *m){
-    /* implement the function here ... */
-    return -ENOSYS;
+    if((m == NULL) || (m->content == NULL)){
+        return -1;
+   }
+   for(int i=0;i<m->rows;i++){
+        for(int j=0;j<m->columns;j++){
+            if(i==j){
+                m->content[i][j] = 1;
+            }
+            else{
+                m->content[i][j] = 0;
+            }
+        }
+   }
+    
 }
 int matrix_init_rand(matrix_t *m, int val_min, int val_max) {
     //make sure pointer to matrix isn't null
@@ -91,12 +103,23 @@ int matrix_init_rand(matrix_t *m, int val_min, int val_max) {
 }
 
 int matrix_equal(matrix_t *m1, matrix_t *m2) {
-    /* implement the function here ... */
-    return -ENOSYS;
+    if(!m1 || !m2 || !(m1->content) || !(m2->content)){
+        return 0;
+   }
+   if((m1->rows != m2->rows) || (m1->columns != m2->columns)){
+        return 0;
+   }
+    for(int i =0; i<m1->rows;i++){
+        for(int j=0;j<m1->columns;j++){
+            if(m1->content[i][j] != m2->content[i][j]){
+                return 0;
+            }
+        }
+    }
+    return 1;
 }
 
 int matrix_sum(matrix_t *m1, matrix_t *m2, matrix_t *result) {
-    /* implement the function here ... */
     return -ENOSYS;
 }
 
