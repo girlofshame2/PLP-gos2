@@ -33,16 +33,20 @@ int matrix_init_identity(matrix_t *m);
  * rows and columns, and same elements. Return 0 if the matrices are
  * different. */
 int matrix_equal(matrix_t *m1, matrix_t *m2);
+
 /* Sum 'm1' and 'm2' into result. matrix_sum should take care of allocating
  * result. Return 0 on success, something else on failure. */
 int matrix_sum(matrix_t *m1, matrix_t *m2, matrix_t *result);
+
 /* Multiply the matrix 'm' by the scalar 'scalar' and places the result into
  * 'result'. Should take care of the allocation of 'result'. Return 0 on
  * success, something else on failure. */
 int matrix_scalar_product(matrix_t *m, int scalar, matrix_t *result);
+
 /* Transpose 'm' into 'result'. Should take care of the allocation of 'result'.
  * Return 0 on success, something else on failure. */
 int matrix_transposition(matrix_t *m, matrix_t *result);
+
 /* Multiply 'm1' by 'm2' and place the result in 'result'. Should take care of
  * allocating 'result'. Return 0 on success and something else on failure. */
 int matrix_product(matrix_t *m1, matrix_t *m2, matrix_t *result);
