@@ -28,6 +28,8 @@ int matrix_allocate(matrix_t *m, int rows, int columns) {
             }
             //free the pointer array
             free(m->content);
+            m->rows=0;
+            m->columns=0;
             return -1;
         }
     }
@@ -190,8 +192,7 @@ int matrix_scalar_product(matrix_t *m, int scalar, matrix_t *result) {
     return 0;
 }
 
-/* Transpose 'm' into 'result'. Should take care of the allocation of 'result'.
- * Return 0 on success, something else on failure. */
+
 int matrix_transposition(matrix_t *m, matrix_t *result) {
    if(!m || !m->content){
         return -1;
@@ -240,31 +241,38 @@ int matrix_product(matrix_t *m1, matrix_t *m2, matrix_t *result) {
 int matrix_dump_file(matrix_t *m, const char *output_file) {
     
     //does the file, matrix and matrix content exist?
-    if (! output_file || !m  || !m->content) {
+    if(!output_file || !m || !m->content){
         return -1;
     }
     //open file in overwrite mode
-    FILE *f = fopen(output_file, "w");
+    FILE* f = fopen(output_file,"w");
     //check that worked 
-    if ( f == NULL) {
-        return -1;
-    }
+   if(!f){
+    return -1;
+   }
 
     //iterate through the matrix and print it to the file 
-    for (int i = 0;  i < m->rows; i++) {
-        for (int j = 0; j <m->columns; j++) {
-            fprintf(f, "%d", m->content[i][j]);
-            //formatting
-            if(j + 1< m->columns){
-                fputc(' ',f);
+    for(int i=0;i<m->rows;i++){
+        for(int j=0; j<m->columns; j++){
+            if (fprintf(f, "%d", m->content[i][j]) < 0){
+                return -1;
+            }
+            
+            if(j+1<m->columns){
+                if(fprintf(f, " ") < 0){
+                    return -1;
+                }
+                //check if thats right
             }
         }
-        //formatting
-        fprintf( f, "\n");
+        if(fprintf(f,"\n") < 0){
+            return -1;
+        }
+        //check that worked
     }
-    
+       
     //close file and make sure it closed properly
-    if (fclose(f) != 0) {
+    if(fclose(f) < 0){
         return -1;
     }
     //if all went well return 0 
@@ -272,5 +280,115 @@ int matrix_dump_file(matrix_t *m, const char *output_file) {
 }
 
 int matrix_allocate_and_init_file(matrix_t *m, const char *input_file) {
-    
-}
+
+    //check that m exists, and that the output file also exists 
+    if (!m || !input_file) {
+        return -1;
+    }
+
+    //open file in read mode and check that worked 
+    FILE *f = fopen(input_file, "r");
+    if (!f) {
+        return -1;
+    }
+     const size_t LINE_BUF_SIZE = 8192;
+
+    char *line_buf = malloc(LINE_BUF_SIZE);
+    if (line_buf == NULL) {
+        fclose(f);
+        return -1;
+    }
+
+    size_t cols = 0;
+    size_t rows = 0;
+    int *flat_values = NULL;
+    size_t values_capacity = 0;
+    size_t values_count = 0;
+
+
+    while (fgets(line_buf, LINE_BUF_SIZE, f) != NULL) {
+        char *p = line_buf;
+        while (*p && isspace((unsigned char)*p)) {
+            p++;
+        }
+        if (*p == '\0') {
+            continue;
+        }
+
+        size_t this_row_cols = 0;
+        char *saveptr = NULL;
+        char *token = strtok_r(line_buf, " \t\r\n", &saveptr);
+
+
+        while (token != NULL) {
+            char *endptr = NULL;
+            errno = 0;
+            long v = strtol(token, &endptr, 10);
+
+            if (endptr == token || *endptr != '\0' || errno != 0) {
+                free(flat_values);
+                free(line_buf);
+                fclose(f);
+                return -1;
+            }
+
+            if (values_count == values_capacity) {
+                size_t newcap = (values_capacity == 0 ? 64 : values_capacity * 2);
+                int * tmp = realloc(flat_values, newcap * sizeof *flat_values);
+                if (tmp  == NULL) {
+                    free(flat_values);
+                    free(line_buf);
+                    fclose(f);
+                    return -1;
+                }
+                flat_values = tmp;
+                values_capacity = newcap;
+            }
+
+            flat_values[values_count++] = (int)v;
+            this_row_cols++;
+            token = strtok_r(NULL, " \t\r\n", &saveptr);
+        }
+
+        if (this_row_cols == 0) {
+            continue;
+        }
+        if (cols == 0) {
+            cols = this_row_cols;
+        } 
+        else if (cols != this_row_cols) 
+        {
+            free(flat_values);
+            free(line_buf);
+            fclose(f);
+            
+            return -1;
+        }
+        rows++;
+    }
+
+    free(line_buf);
+    fclose(f);
+
+    if (rows == 0 || cols == 0) {
+        free(flat_values);
+        return -1;
+    }
+
+    if (matrix_allocate(m, (int)rows, (int)cols) != 0)
+     {
+        free(flat_values);
+        return -1;
+    }
+    size_t idx = 0;
+    for (size_t i = 0; i < rows; i++) {
+        for (size_t j = 0; j < cols; j++) {
+            m->content[i][j] = flat_values[idx++];
+        }
+    }
+    free(flat_values);
+    return 0;
+} 
+
+     
+
