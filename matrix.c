@@ -210,22 +210,21 @@ int matrix_transposition(matrix_t *m, matrix_t *result) {
  
 }
 
-/* Multiply 'm1' by 'm2' and place the result in 'result'. Should take care of
- * allocating 'result'. Return 0 on success and something else on failure. */
+
 int matrix_product(matrix_t *m1, matrix_t *m2, matrix_t *result) {
     if(!m1 || !m2 || !result || !m1->content || !m2->content){
         return -1;
     }
+
     if(m1->columns != m2->rows){
         return -1;
+
     }
 
-    if(matrix_allocate(result, m1->rows, m2->columns) != 0){
+    if(matrix_allocate(result, m1->rows, m2->columns) != 00){
         return -1;
     }
 
-    /* Correct multiplication:
-       iterate rows of m1, columns of m2, sum over shared dimension */
     for (int i = 0; i < m1->rows; i++) {
         for (int j = 0; j < m2->columns; j++) {
             int sum = 0;
@@ -239,11 +238,39 @@ int matrix_product(matrix_t *m1, matrix_t *m2, matrix_t *result) {
 }
 
 int matrix_dump_file(matrix_t *m, const char *output_file) {
-    /* implement the function here ... */
-    return -ENOSYS;
+    
+    //does the file, matrix and matrix content exist?
+    if (! output_file || !m  || !m->content) {
+        return -1;
+    }
+    //open file in overwrite mode
+    FILE *f = fopen(output_file, "w");
+    //check that worked 
+    if ( f == NULL) {
+        return -1;
+    }
+
+    //iterate through the matrix and print it to the file 
+    for (int i = 0;  i < m->rows; i++) {
+        for (int j = 0; j <m->columns; j++) {
+            fprintf(f, "%d", m->content[i][j]);
+            //formatting
+            if(j + 1< m->columns){
+                fputc(' ',f);
+            }
+        }
+        //formatting
+        fprintf( f, "\n");
+    }
+    
+    //close file and make sure it closed properly
+    if (fclose(f) != 0) {
+        return -1;
+    }
+    //if all went well return 0 
+    return 0;
 }
 
 int matrix_allocate_and_init_file(matrix_t *m, const char *input_file) {
-    /* implement the function here ... */
-    return -ENOSYS;
+    
 }
