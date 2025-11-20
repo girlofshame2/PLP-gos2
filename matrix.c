@@ -30,6 +30,7 @@ int matrix_allocate(matrix_t *m, int rows, int columns) {
             }
             //free the pointer array
             free(m->content);
+            m->content = NULL;
             m->rows=0;
             m->columns=0;
             return -1;
@@ -78,6 +79,10 @@ int matrix_init_identity(matrix_t *m){
     if((m == NULL) || (m->content == NULL)){
         return -1;
    }
+    if(m->rows != m->columns){
+        return -1;
+    }
+
    for(int i=0;i<m->rows;i++){
         for(int j=0;j<m->columns;j++){
             if(i==j){
@@ -262,12 +267,14 @@ int matrix_dump_file(matrix_t *m, const char *output_file) {
             
             if(j+1<m->columns){
                 if(fprintf(f, " ") < 0){
+                    fclose(f);
                     return -1;
                 }
                 //check if thats right
             }
         }
         if(fprintf(f,"\n") < 0){
+            fclose(f);
             return -1;
         }
         //check that worked
@@ -275,6 +282,7 @@ int matrix_dump_file(matrix_t *m, const char *output_file) {
        
     //close file and make sure it closed properly
     if(fclose(f) < 0){
+        fclose(f);
         return -1;
     }
     //if all went well return 0 
