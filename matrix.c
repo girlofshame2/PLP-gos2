@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <errno.h> /* for ENOSYS */
 #include <stdio.h>  /* enable print for debugging */
+#include <ctype.h>
+#include <string.h>
 
 int matrix_allocate(matrix_t *m, int rows, int columns) {
     
@@ -316,8 +318,8 @@ int matrix_allocate_and_init_file(matrix_t *m, const char *input_file) {
         }
 
         size_t this_row_cols = 0;
-        char *saveptr = NULL;
-        char *token = strtok_r(line_buf, " \t\r\n", &saveptr);
+        //char *saveptr = NULL;
+        char *token = strtok_r(line_buf, " \t\r\n");//,&savetpr
 
 
         while (token != NULL) {
@@ -347,7 +349,7 @@ int matrix_allocate_and_init_file(matrix_t *m, const char *input_file) {
 
             flat_values[values_count++] = (int)v;
             this_row_cols++;
-            token = strtok_r(NULL, " \t\r\n", &saveptr);
+            token = strtok_r(NULL, " \t\r\n");//,andsavetpr
         }
 
         if (this_row_cols == 0) {
